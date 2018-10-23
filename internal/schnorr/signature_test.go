@@ -32,17 +32,16 @@ func TestSchnorrSignature(t *testing.T) {
 	sign := Sign(opriv, rpriv, m)
 
 	// verifiation
-	c := btcec.S256().CurveParams
-	X, Y := btcec.S256().ScalarMult(c.Gx, c.Gy, sign.Bytes())
-	assert.Equal(sG.X, X)
-	assert.Equal(sG.Y, Y)
+	sG2 := new(btcec.PublicKey)
+	sG2.X, sG2.Y = btcec.S256().ScalarBaseMult(sign.Bytes())
+	assert.True(sG.IsEqual(sG2))
 
 	// Oracle's sign for another message
 	m = big.NewInt(int64(2)).Bytes()
-	sign = Sign(opriv, rpriv, m)
-	X, Y = btcec.S256().ScalarMult(c.Gx, c.Gy, sign.Bytes())
-	assert.NotEqual(sG.X, X)
-	assert.NotEqual(sG.Y, Y)
+	sign2 := Sign(opriv, rpriv, m)
+	sG3 := new(btcec.PublicKey)
+	sG3.X, sG3.Y = btcec.S256().ScalarBaseMult(sign2.Bytes())
+	assert.False(sG.IsEqual(sG3))
 }
 
 func randExtKey() (*hdkeychain.ExtendedKey, error) {
