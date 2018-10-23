@@ -1,12 +1,8 @@
 package oracle
 
 import (
-	"encoding/hex"
 	"encoding/json"
-	"math/big"
 	"time"
-
-	"github.com/btcsuite/btcd/btcec"
 )
 
 // PubkeySet contains oracle's pub key and keys for all rate
@@ -61,28 +57,4 @@ func committedRpoints(extKey *privExtKey, nRpoints int) ([]string, error) {
 	}
 
 	return keys, nil
-}
-
-// Commit commits to a message
-func (oracle *Oracle) Commit(R *btcec.PublicKey, O *btcec.PublicKey, m []byte) *btcec.PublicKey {
-	// H(R,m)
-	h := hash(R, m)
-	// - H(R,m)
-	h = new(big.Int).Mod(new(big.Int).Neg(h), btcec.S256().N)
-	hO := new(btcec.PublicKey)
-	// - H(R,m)O
-	hO.X, hO.Y = btcec.S256().ScalarMult(O.X, O.Y, h.Bytes())
-	// R - H(R,m)O
-	P := new(btcec.PublicKey)
-	P.X, P.Y = btcec.S256().Add(R.X, R.Y, hO.X, hO.Y)
-	return P
-}
-
-// StrToPubkey converts string to public key.
-func StrToPubkey(str string) (*btcec.PublicKey, error) {
-	bs, err := hex.DecodeString(str)
-	if err != nil {
-		return nil, err
-	}
-	return btcec.ParsePubKey(bs, btcec.S256())
 }
