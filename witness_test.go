@@ -13,33 +13,41 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestScriptEngine(t *testing.T) {
+func TestP2WPKHpkScript(t *testing.T) {
 	assert := assert.New(t)
 	assert.True(true)
 
-	_, pub := randKeys()
+	pri, pub := randKeys()
 	txVersion := int32(2)
 	tx := wire.NewMsgTx(txVersion)
+
+	// script
+	pkScript, _ := P2WPKHpkScript(pub)
 
 	// prepare fake txin
 	prevOut := wire.NewOutPoint(&chainhash.Hash{}, ^uint32(0))
 	txIn := wire.NewTxIn(prevOut, []byte{txscript.OP_0, txscript.OP_0}, nil)
 	tx.AddTxIn(txIn)
-	pkScript, _ := P2WPKHpkScript(pub)
-	txOut := wire.NewTxOut(100000000, pkScript)
-	tx.AddTxOut(txOut)
+	utxoAmt := int64(100000000)
+	tx.AddTxOut(wire.NewTxOut(utxoAmt, pkScript))
 	txHash := tx.TxHash()
 
 	redeemTx := wire.NewMsgTx(txVersion)
 	prevOut = wire.NewOutPoint(&txHash, 0)
-	txIn = wire.NewTxIn(prevOut, nil, nil)
-	redeemTx.AddTxIn(txIn)
-	txOut = wire.NewTxOut(0, nil)
-	redeemTx.AddTxOut(txOut)
+	redeemTx.AddTxIn(wire.NewTxIn(prevOut, nil, nil))
+	redeemTx.AddTxOut(wire.NewTxOut(0, nil))
 
-	flags := txscript.ScriptBip16 | txscript.ScriptVerifyWitness
+	sighash := txscript.NewTxSigHashes(redeemTx)
+	sign, err := txscript.RawTxInWitnessSignature(
+		redeemTx, sighash, 0, utxoAmt, tx.TxOut[0].PkScript, txscript.SigHashAll, pri)
+	assert.Nil(err)
+	tw := wire.TxWitness{}
+	tw = append(tw, sign)
+	tw = append(tw, pub.SerializeCompressed())
+	redeemTx.TxIn[0].Witness = tw
 
-	vm, err := txscript.NewEngine(pkScript, redeemTx, 0, flags, nil, nil, -1)
+	flags := txscript.StandardVerifyFlags
+	vm, err := txscript.NewEngine(pkScript, redeemTx, 0, flags, nil, nil, utxoAmt)
 	assert.Nil(err)
 
 	err = vm.Execute()
