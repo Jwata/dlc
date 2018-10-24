@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6c6788d87ec354ac135dff255d03fb2bed41bfd10200ba555eb076842815702e"
+  digest = "1:ab6815e0f7c5f12fa55de1a367797cd0ace7cce2678d7b3e6c9dbb94b8e2a3fe"
   name = "github.com/btcsuite/btcd"
   packages = [
     "btcec",
@@ -11,6 +11,7 @@
     "chaincfg",
     "chaincfg/chainhash",
     "rpcclient",
+    "txscript",
     "wire",
   ]
   pruneopts = "UT"
@@ -93,6 +94,8 @@
     "github.com/btcsuite/btcd/chaincfg",
     "github.com/btcsuite/btcd/chaincfg/chainhash",
     "github.com/btcsuite/btcd/rpcclient",
+    "github.com/btcsuite/btcd/txscript",
+    "github.com/btcsuite/btcd/wire",
     "github.com/btcsuite/btcutil",
     "github.com/btcsuite/btcutil/hdkeychain",
     "github.com/stretchr/testify/assert",
