@@ -8,6 +8,8 @@ import (
 
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
+	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcwallet/waddrmgr"
 	"github.com/btcsuite/btcwallet/walletdb"
 	_ "github.com/btcsuite/btcwallet/walletdb/bdb" // blank import for bolt db driver
@@ -208,4 +210,18 @@ func fileExists(filePath string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (w *Wallet) SendTx(tx *wire.MsgTx) (*chainhash.Hash, error) {
+	allowHighFees := false
+	//return w.rpc.SendRawTransaction(tx, allowHighFees)
+
+	// testing
+	// marshalled: `{"jsonrpc":"1.0","method":"sendrawtransaction","params":["1122"],"id":1}`,
+	// unmarshalled: &btcjson.SendRawTransactionCmd{
+	// 	HexTx:         "1122",
+	// 	AllowHighFees: btcjson.Bool(false),
+	// },
+	// https://github.com/btcsuite/btcd/blob/fdfc19097e7ac6b57035062056f5b7b4638b8898/btcjson/chainsvrcmds_test.go#L903
+
 }
